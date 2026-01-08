@@ -2,10 +2,13 @@ from pickle import TRUE
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
-from sqlmodel import select, func
+from sqlmodel import select, func, update
 from sqlalchemy.exc import IntegrityError
 from appserver.db import DbSessionDep
-from .schemas import SignupPayload, UserOut, LoginPayload, UserDetailOut
+from .schemas import (
+    SignupPayload, UserOut, LoginPayload, UserDetailOut,
+    UpdateUserPayload,
+)
 from .models import User
 from .deps import CurrentUserDep
 from .constants import AUTH_TOKEN_COOKIE_NAME
@@ -121,4 +124,18 @@ async def login(payload: LoginPayload, session: DbSessionDep) -> JSONResponse:
 
 @router.get("/@me", response_model=UserDetailOut)
 async def me(user: CurrentUserDep) -> User:
+    return user
+
+
+@router.patch("/@me", response_model=UserDetailOut)
+async def update_user(
+    user: CurrentUserDep,
+    payload: UpdateUserPayload,
+    session: DbSessionDep
+) -> User:
+    updated_data = payload.model_dump(exclude_none=True)
+
+    stmt = update(User).where(User.id == user.id).values(**updated_data)
+    await session.execute(stmt)
+    await session.commit()
     return user
