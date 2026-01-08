@@ -1,7 +1,7 @@
 import random
 import string
 from typing import Self
-from pydantic import EmailStr, model_validator
+from pydantic import AwareDatetime, EmailStr, model_validator
 from sqlmodel import SQLModel, Field
 
 class SignupPayload(SQLModel):
@@ -39,3 +39,8 @@ class LoginPayload(SQLModel):
     username: str = Field(min_length=4, max_length=40)
     password: str = Field(min_length=8, max_length=128)
 
+
+class UserDetailOut(UserOut):
+    email: EmailStr
+    created_at: AwareDatetime
+    updated_at: AwareDatetime

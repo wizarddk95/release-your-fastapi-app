@@ -25,4 +25,14 @@
       "./appserver"
     ],
     "python.terminal.activateEnvironment": true,
+    "cursorpyright.analysis.autoImportCompletions": true,
+    "cursorpyright.analysis.autoSearchPaths": true,
+    "cursorpyright.analysis.extraPaths": [
+      "./appserver"
+    ],
+    "cursorpyright.analysis.include": [
+      "./appserver"
+    ],
+    "cursorpyright.analysis.typeCheckingMode": "off",
+    "cursorpyright.analysis.useLibraryCodeForTypes": true,
   }

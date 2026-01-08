@@ -5,8 +5,10 @@ from fastapi.responses import JSONResponse
 from sqlmodel import select, func
 from sqlalchemy.exc import IntegrityError
 from appserver.db import DbSessionDep
-from .schemas import SignupPayload, UserOut, LoginPayload
+from .schemas import SignupPayload, UserOut, LoginPayload, UserDetailOut
 from .models import User
+from .deps import CurrentUserDep
+from .constants import AUTH_TOKEN_COOKIE_NAME
 from .utils import (
     verify_password,
     create_access_token,
@@ -96,7 +98,10 @@ async def login(payload: LoginPayload, session: DbSessionDep) -> JSONResponse:
     response_data = {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": user.model_dump(mode="json", exclude={"hashed_password", "email"})
+        "user": user.model_dump(
+            mode="json", 
+            exclude={"hashed_password", "email"}
+        )
     }
 
     # return JSONResponse(response_data)
@@ -104,7 +109,7 @@ async def login(payload: LoginPayload, session: DbSessionDep) -> JSONResponse:
 
     res = JSONResponse(response_data, status_code=status.HTTP_200_OK)
     res.set_cookie(
-        key="auth_token",
+        key=AUTH_TOKEN_COOKIE_NAME,
         value=access_token,
         expires=now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
         httponly=True,
@@ -112,3 +117,8 @@ async def login(payload: LoginPayload, session: DbSessionDep) -> JSONResponse:
         samesite="strict"
     )
     return res
+
+
+@router.get("/@me", response_model=UserDetailOut)
+async def me(user: CurrentUserDep) -> User:
+    return user

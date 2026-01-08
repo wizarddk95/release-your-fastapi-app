@@ -71,7 +71,7 @@ async def test_계정_ID가_중복되면_중복_계정_ID_오류를_일으킨다
         await signup(payload, db_session)
 
 
-async def test_e_mail_주소가_중보되면_중복_E_mail_주소_오류를_일으킨다(
+async def test_e_mail_주소가_중복되면_중복_E_mail_주소_오류를_일으킨다(
     db_session: AsyncSession
 ):
     payload = {

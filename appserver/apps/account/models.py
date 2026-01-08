@@ -18,8 +18,8 @@ class User(SQLModel, table=True):
     )
 
     id: int = Field(default=None, primary_key=True)
-    username: str = Field(min_length=4,max_length=40, description="사용자 계정 ID")
-    email: EmailStr = Field(unique=True, max_length=128, description="사용자 이메일")
+    username: str = Field(unique=True, min_length=4,max_length=40, description="사용자 계정 ID")
+    email: EmailStr = Field(max_length=128, description="사용자 이메일")
     display_name: str = Field(min_length=4, max_length=40, description="사용자 표시 이름")
     # display_name: str | None = Field(min_length=4, max_length=40, description="사용자 표시 이름")
     # password: str = Field(min_length=8, max_length=128, description="사용자 비밀번호")
