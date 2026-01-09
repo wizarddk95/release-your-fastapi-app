@@ -18,6 +18,8 @@ async def db_session():
     dsn = "sqlite+aiosqlite:///:memory:"
     engine = create_async_engine(dsn)       # 비동기 엔진 생성 (테스트 동안의 사용할 DB 연결 진입점)
     async with engine.begin() as conn:      # DB 연결 컨텍스트 (하나의 connection 안에서 테이블 생성/삭제)
+        # SQALModel.metadata.(...)() 함수들은 동기 SQLAlchemy API.
+        # 비동기 컨텍스트에서 동기 전용 함수를 사용할 때는 conn.run_sync() 함수를 사용해야 한다.
         await conn.run_sync(SQLModel.metadata.drop_all)
         await conn.run_sync(SQLModel.metadata.create_all) 
 

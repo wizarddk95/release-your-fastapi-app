@@ -1,6 +1,6 @@
 from pickle import TRUE
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Body
 from fastapi.responses import JSONResponse
 from sqlmodel import select, func, update
 from sqlalchemy.exc import IntegrityError
@@ -130,12 +130,13 @@ async def me(user: CurrentUserDep) -> User:
 @router.patch("/@me", response_model=UserDetailOut)
 async def update_user(
     user: CurrentUserDep,
-    payload: UpdateUserPayload,
-    session: DbSessionDep
+    session: DbSessionDep,
+    payload: UpdateUserPayload = Body(...),
 ) -> User:
-    updated_data = payload.model_dump(exclude_none=True)
+    updated_data = payload.model_dump(exclude_none=True, exclude={"password", "password_again"})
 
     stmt = update(User).where(User.id == user.id).values(**updated_data)
     await session.execute(stmt)
     await session.commit()
+    await session.refresh(user)
     return user

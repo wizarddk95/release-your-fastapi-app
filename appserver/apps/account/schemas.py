@@ -49,7 +49,7 @@ class UserDetailOut(UserOut):
 
 class UpdateUserPayload(SQLModel):
     display_name: str | None = Field(default=None, min_length=4, max_length=40)
-    email: EmailStr | None = Field(default=None, unique=True, max_length=128)
+    email: EmailStr | None = Field(default=None, max_length=128)
     password: str | None = Field(default=None, min_length=8, max_length=128)
     password_again: str | None = Field(default=None, min_length=8, max_length=128)
 
@@ -61,10 +61,14 @@ class UpdateUserPayload(SQLModel):
     
     @model_validator(mode="after")
     def verify_password(self) -> Self:
-        if self.password and self.password_again:
-            raise ValueError("비밀번호가 일치하지 않습니다.")
-        return self
-    
+        if self.password is not None or self.password_again is not None:
+            # 둘 중 하나라도 들어오면 둘 다 있어야 함
+            if not self.password or not self.password_again:
+                raise ValueError("비밀번호 변경 시 password와 password_again을 모두 제공해야 합니다.")
+
+            if self.password != self.password_again:
+                raise ValueError("비밀번호가 일치하지 않습니다.")
+
     @computed_field
     @property
     def hashed_password(self) -> str | None:
