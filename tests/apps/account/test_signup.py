@@ -8,6 +8,7 @@ from appserver.apps.account.exceptions import (
     DuplicateUsernameError,
     DuplicateEmailError,
 )
+from appserver.apps.account.schemas import SignupPayload
 
 async def test_모든_입력_항목을_유효한_값으로_입력하면_계정이_생성된다(
     client: TestClient,
@@ -74,15 +75,16 @@ async def test_계정_ID가_중복되면_중복_계정_ID_오류를_일으킨다
 async def test_e_mail_주소가_중복되면_중복_E_mail_주소_오류를_일으킨다(
     db_session: AsyncSession
 ):
-    payload = {
+    payload = SignupPayload.model_validate({
         "username": "test",
         "email": "test@example.com",
         "display_name": "test",
-        "password": "test테스트1234"
-    }
+        "hashed_password": "test테스트1234",
+        "password_again": "test테스트1234"
+    })
     await signup(payload, db_session)
 
-    payload["username"] = "test2"
+    payload.username = "test2"
     with pytest.raises(DuplicateEmailError) as exc:
         await signup(payload, db_session)
 
@@ -90,11 +92,13 @@ async def test_e_mail_주소가_중복되면_중복_E_mail_주소_오류를_일�
 async def test_표시명을_입력하지_않으면_무작위_문자열_8글자로_대신한다(
     db_session: AsyncSession
 ):
-    payload = {
+    payload = SignupPayload.model_validate({
         "username": "test",
         "email": "test@example.com",
-        "password": "test테스트1234",
-    }
+        "hashed_password": "test테스트1234",
+        "password_again": "test테스트1234",
+        # display_name은 없음 - validator가 생성해야 함
+    })
     user = await signup(payload, db_session)
     assert isinstance(user.display_name, str)
     assert len(user.display_name) == 8

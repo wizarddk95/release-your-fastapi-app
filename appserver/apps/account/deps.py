@@ -8,14 +8,18 @@ from .models import User
 from .constants import AUTH_TOKEN_COOKIE_NAME
 from .utils import decode_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
+# 클라이언트가 보낸 HTTP 요청의 Cookie 헤더에서 값을 읽습니다.
+# 서버가 설정한 쿠키를 클라이언트가 저장하고, 이후 요청에 포함시킵니다.
+# FastAPI는 요청의 Cookie 헤더를 파싱해 Cookie(...)로 주입합니다.
+
+    # 테스트 안정성을 위한 코드
+    # - get_current_user 함수는 FastAPI DI 컨텍스트 밖에서도 호출될 수 있으므로
+    # - 아래처럼 자체 방어 로직을 가지는 게 안전하다.
 async def get_current_user(
     auth_token: Annotated[str | None, Cookie(...)],
     db_session: DbSessionDep
 ):
 
-    # 테스트 안정성을 위한 코드
-    # - get_current_user 함수는 FastAPI DI 컨텍스트 밖에서도 호출될 수 있으므로
-    # - 아래처럼 자체 방어 로직을 가지는 게 안전하다.
     if auth_token is None:
         raise InvalidTokenError()
 

@@ -12,9 +12,9 @@ UPDTABLE_FIELDS = frozenset(["display_name", "email"])
     {"display_name": "푸딩캠프", "email": "hannal@example.com"},
 ])
 async def test_사용자가_변경하는_항목만_변경되고_나머지는_기존_값을_유지한다(
-    client_with_auth: TestClient, # 인증을 받은 클라이언트
-    payload: dict, # 클라이언트 요청 페이로드
-    host_user: User, # 클라이언트 사용자
+    client_with_auth: TestClient,
+    payload: dict,
+    host_user: User
 ):
     # 현재 사용자 정보를 보관한다.
     before_data = host_user.model_dump()

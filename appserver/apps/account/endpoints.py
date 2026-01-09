@@ -2,7 +2,7 @@ from pickle import TRUE
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, HTTPException, status, Body
 from fastapi.responses import JSONResponse
-from sqlmodel import select, func, update
+from sqlmodel import select, func, update, delete
 from sqlalchemy.exc import IntegrityError
 from appserver.db import DbSessionDep
 from .schemas import (
@@ -129,9 +129,9 @@ async def me(user: CurrentUserDep) -> User:
 
 @router.patch("/@me", response_model=UserDetailOut)
 async def update_user(
+    payload: UpdateUserPayload,
     user: CurrentUserDep,
     session: DbSessionDep,
-    payload: UpdateUserPayload = Body(...),
 ) -> User:
     updated_data = payload.model_dump(exclude_none=True, exclude={"password", "password_again"})
 
@@ -140,3 +140,19 @@ async def update_user(
     await session.commit()
     await session.refresh(user)
     return user
+
+
+@router.delete("/logout", status_code=status.HTTP_200_OK)
+async def logout(user: CurrentUserDep) -> JSONResponse:
+    res = JSONResponse({})
+    res.delete_cookie(AUTH_TOKEN_COOKIE_NAME)
+    return res
+
+
+@router.delete("/unregister", status_code=status.HTTP_204_NO_CONTENT)
+async def unregister(user: CurrentUserDep, session: DbSessionDep) -> None:
+    stmt = delete(User).where(User.id == user.id)
+    await session.execute(stmt)
+    await session.commit()
+    return None
+
