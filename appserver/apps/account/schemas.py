@@ -69,6 +69,8 @@ class UpdateUserPayload(SQLModel):
             if self.password != self.password_again:
                 raise ValueError("비밀번호가 일치하지 않습니다.")
 
+        return self
+
     @computed_field
     @property
     def hashed_password(self) -> str | None:

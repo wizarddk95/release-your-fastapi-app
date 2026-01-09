@@ -18,5 +18,5 @@ def test_로그아웃_시_인증_토큰이_삭제되어야_한다(
     # 2. 인증이 필요한 API 호출
     res = client_with_auth.get("/account/@me")
 
-    # 3. 인증 실패 확인
+    # 3. 인증 실패 확인 (쿠키가 필수값이므로 422 오류 발생)
     assert res.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
