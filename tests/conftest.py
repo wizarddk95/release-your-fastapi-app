@@ -96,4 +96,31 @@ def client_with_auth(fastapi_app: FastAPI, host_user: account_models.User):
         yield client # 인증을 받은 클라이언트 반환
 
 
-        
+@pytest.fixture()
+async def guest_user(db_session: AsyncSession):
+    user = account_models.User(
+        username="puddingcafe",
+        hashed_password=hash_password("testtest"),
+        email="puddingcafe@example.com",
+        display_name="푸딩카페",
+        is_host=False,
+    )
+    db_session.add(user)
+    await db_session.flush()
+    await db_session.commit()
+    return user
+
+
+@pytest.fixture()
+async def host_user_calendar(db_session: AsyncSession, host_user: account_models.User):
+    calendar = calendar_models.Calendar(
+        host_id=host_user.id,
+        description="푸딩캠프 캘린더입니다.",
+        topics=["푸딩캠프", "푸딩캠프2"],
+        google_calendar_id="1234567890",
+    )
+    db_session.add(calendar)
+    await db_session.flush()
+    await db_session.commit()
+    # await db_session.refresh(host_user)
+    return calendar
