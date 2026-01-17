@@ -5,7 +5,7 @@ from sqlmodel import SQLModel, Field, Relationship, func, Column, AutoString
 from pydantic import EmailStr, AwareDatetime, model_validator
 from sqlalchemy import UniqueConstraint
 from sqlalchemy_utc import UtcDateTime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
     from appserver.apps.calendar.models import Calendar, Booking
 
@@ -44,9 +44,9 @@ class User(SQLModel, table=True):
     )
 
     oauth_accounts: list["OAuthAccount"] = Relationship(back_populates="user")
-    calendars: "Calendar" = Relationship(
+    calendar: Union["Calendar", None] = Relationship(
         back_populates="host",
-        sa_relationship_kwargs={"uselist": False, "single_parent": True},
+        sa_relationship_kwargs={"uselist": False, "single_parent": True, "lazy": "joined"},
     )
     bookings: list["Booking"] = Relationship(back_populates="guest")
 

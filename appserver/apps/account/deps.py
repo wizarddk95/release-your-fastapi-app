@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta
 from sqlmodel import select
 from fastapi import Depends, Cookie, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from appserver.db import DbSessionDep
 from .exceptions import InvalidTokenError, ExpiredTokenError, UserNotFoundError

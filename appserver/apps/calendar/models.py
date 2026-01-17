@@ -7,6 +7,7 @@ from sqlmodel import SQLModel, Field, Relationship, Text, JSON, func, String, Co
 if TYPE_CHECKING:
     from appserver.apps.account.models import User
 
+
 class Calendar(SQLModel, table=True):
     __tablename__ = "calendars"
 
@@ -37,7 +38,7 @@ class Calendar(SQLModel, table=True):
 
     host_id: int = Field(foreign_key="users.id", unique=True)
     host: "User" = Relationship(
-        back_populates="calendars",
+        back_populates="calendar",
         sa_relationship_kwargs={"uselist": False, "single_parent": True},
     )
     time_slots: list["TimeSlot"] = Relationship(back_populates="calendar")
