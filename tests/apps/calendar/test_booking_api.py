@@ -5,7 +5,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from appserver.apps.account.models import User
-from appserver.apps.calendar.models import TimeSlot
+from appserver.apps.calendar.models import TimeSlot, Booking
 
 
 @pytest.mark.usefixtures("host_user_calendar")
@@ -77,3 +77,49 @@ async def test_존재하지_않는_시간대에_예약을_생성하면_HTTP_404_
     response = client_with_guest_auth.post(f"/bookings/{host_user.username}", json=payload)
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.usefixtures("charming_host_bookings")
+async def test_호스트는_페이지_단위로_자신에게_예약된_부킹_목록을_받는다(
+    client_with_auth: TestClient,
+    host_bookings: list[Booking],
+):
+    response = client_with_auth.get("/bookings", params={"page": 1, "page_size": 10})
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data) == len(host_bookings)
+
+
+@pytest.mark.parametrize(
+    "year, month",
+    [(2024, 12), (2025, 1)],
+)
+@pytest.mark.usefixtures("charming_host_bookings")
+async def test_게스트는_호스트의_캘린더의_예약_내역을_월_단위로_받는다(
+    client_with_guest_auth: TestClient,
+    host_bookings: list[Booking],
+    host_user: User,
+    year: int,
+    month: int,
+):
+    params = {
+        "year": year,
+        "month": month,
+    }
+    response = client_with_guest_auth.get(
+        f"/calendar/{host_user.username}/bookings",
+        params=params,
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+
+    booking_dates = frozenset([
+        booking.when.isoformat()
+        for booking in host_bookings
+        if booking.when.year == params["year"] and booking.when.month == params["month"]
+    ])
+    assert not not data
+    assert len(data) == len(booking_dates)
+    assert all([item["when"] in booking_dates for item in data])
